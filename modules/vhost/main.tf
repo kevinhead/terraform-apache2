@@ -1,3 +1,10 @@
+locals {
+  document_root   = "/var/www/${var.server_name}/public_html/index.html"
+  sites_available = "/etc/apache2/sites-available/${var.server_name}.conf"
+  error_log       = "/var/log/apache2/${var.server_name}.error.log"
+  custom_log      = "/var/log/apache2/${var.server_name}.access.log combined"
+}
+
 resource "tls_private_key" "vhost" {
   algorithm = "ECDSA"
 
@@ -25,11 +32,29 @@ resource "tls_self_signed_cert" "vhost" {
   ]
 
   subject {
-    common_name  = "${var.server_name}"
+    common_name = "${var.server_name}"
   }
 
+  # Cert
   provisioner "local-exec" {
     command = "echo '${tls_self_signed_cert.vhost.cert_pem}' > '${var.self_signed_cert_file_path}'"
+  }
+
+  # vhost conf
+  provisioner "file" {
+    content     = "${template_file.vhost_config.rendered}"
+    destination = "${local.sites_available}"
+  }
+
+  # public_html index
+  provisioner "file" {
+    content     = "${template_file.vhost_public_html.rendered}"
+    destination = "${local.document_root}"
+  }
+
+  # activate the new configuration
+  provisioner "local-exec" {
+    command = "service apache2 reload"
   }
 }
 
@@ -37,7 +62,10 @@ data "template_file" "vhost_config" {
   template = "${file("${path.module}/templates/vhost.conf")}"
 
   vars {
-    server_name = "${var.server_name}"
+    server_name    = "${var.server_name}"
+    document_root  = "${local.document_root}"
+    error_log  = "${local.error_log}"
+    custom_log = "${local.custom_log}"
   }
 }
 
