@@ -1,10 +1,10 @@
 locals {
-  private_key = "/etc/ssl/private/${var.server_name}.key"
-  self_signed_cert = "/etc/ssl/certs/${var.server_name}.crt"
-  document_root   = "/var/www/${var.server_name}/public_html"
-  sites_available = "/etc/apache2/sites-available/${var.server_name}.conf"
-  error_log       = "/var/log/apache2/${var.server_name}.error.log"
-  custom_log      = "/var/log/apache2/${var.server_name}.access.log combined"
+  private_key      = "/etc/ssl/private/${var.server_name}.key"
+  self_signed_cert = "/etc/ssl/certs/${var.server_name}.pem"
+  document_root    = "/var/www/${var.server_name}/public_html"
+  sites_available  = "/etc/apache2/sites-available/${var.server_name}.conf"
+  error_log        = "/var/log/apache2/${var.server_name}.error.log"
+  custom_log       = "/var/log/apache2/${var.server_name}.access.log combined"
 }
 
 resource "tls_private_key" "vhost" {
@@ -44,12 +44,12 @@ resource "tls_self_signed_cert" "vhost" {
 
   # vhost conf
   provisioner "local-exec" {
-     command = "echo '${data.template_file.vhost_config.rendered}' > '${local.sites_available}'"
+    command = "echo '${data.template_file.vhost_config.rendered}' > '${local.sites_available}'"
   }
 
   # public_html index
   provisioner "local-exec" {
-     command = "mkdir -p '${local.document_root}' && echo '${data.template_file.vhost_public_html.rendered}' > '${local.document_root}/index.html'"
+    command = "mkdir -p '${local.document_root}' && echo '${data.template_file.vhost_public_html.rendered}' > '${local.document_root}/index.html'"
   }
 
   # activate the new configuration
@@ -62,10 +62,12 @@ data "template_file" "vhost_config" {
   template = "${file("${path.module}/templates/vhost.conf")}"
 
   vars {
-    server_name    = "${var.server_name}"
-    document_root  = "${local.document_root}"
-    error_log  = "${local.error_log}"
-    custom_log = "${local.custom_log}"
+    server_name       = "${var.server_name}"
+    document_root     = "${local.document_root}"
+    ssl_cert_file     = "${local.self_signed_cert}"
+    ssl_cert_key_file = "${local.private_key}"
+    error_log         = "${local.error_log}"
+    custom_log        = "${local.custom_log}"
   }
 }
 
