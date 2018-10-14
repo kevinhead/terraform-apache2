@@ -42,13 +42,13 @@ resource "tls_self_signed_cert" "vhost" {
 
   # vhost conf
   provisioner "file" {
-    content     = "${template_file.vhost_config.rendered}"
+    content     = "${data.template_file.vhost_config.rendered}"
     destination = "${local.sites_available}"
   }
 
   # public_html index
   provisioner "file" {
-    content     = "${template_file.vhost_public_html.rendered}"
+    content     = "${data.template_file.vhost_public_html.rendered}"
     destination = "${local.document_root}"
   }
 
