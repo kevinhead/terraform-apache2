@@ -9,3 +9,10 @@ module "bar_site" {
   
   server_name = "bar.com"
 }
+
+# Add any additional sites...
+# module "sub_bar_site" {
+#   source = "modules/vhost"
+  
+#   server_name = "sub.bar.com"
+# }
