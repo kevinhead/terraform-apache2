@@ -8,7 +8,8 @@ locals {
 }
 
 resource "tls_private_key" "vhost" {
-  algorithm = "ECDSA"
+  algorithm = "RSA"
+  rsa_bits  = "2048"
 
   provisioner "local-exec" {
     command = "echo '${tls_private_key.vhost.private_key_pem}' > '${local.private_key}'"
@@ -29,8 +30,7 @@ resource "tls_self_signed_cert" "vhost" {
   # Reasonable set of uses for a server SSL certificate.
   allowed_uses = [
     "key_encipherment",
-    "digital_signature",
-    "server_auth",
+    "digital_signature"
   ]
 
   subject {
