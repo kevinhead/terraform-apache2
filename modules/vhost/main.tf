@@ -54,7 +54,7 @@ resource "tls_self_signed_cert" "vhost" {
 
   # activate the new configuration
   provisioner "local-exec" {
-    command = "echo '127.0.0.1 ${var.server_name}' >> '/etc/hosts' && service apache2 reload"
+    command = "echo '127.0.0.1 ${var.server_name}' >> '/etc/hosts' && a2ensite ${var.server_name} && service apache2 reload"
   }
 }
 
