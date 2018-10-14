@@ -1,4 +1,6 @@
 locals {
+  private_key = "/etc/ssl/private/${var.server_name}.key"
+  self_signed_cert = "/etc/ssl/certs/${var.server_name}.crt"
   document_root   = "/var/www/${var.server_name}/public_html/index.html"
   sites_available = "/etc/apache2/sites-available/${var.server_name}.conf"
   error_log       = "/var/log/apache2/${var.server_name}.error.log"
@@ -9,7 +11,7 @@ resource "tls_private_key" "vhost" {
   algorithm = "ECDSA"
 
   provisioner "local-exec" {
-    command = "echo '${tls_private_key.vhost.private_key_pem}' > '${var.private_key_file_path}/{}.key'"
+    command = "echo '${tls_private_key.vhost.private_key_pem}' > '${local.private_key}'"
   }
 }
 
@@ -37,7 +39,7 @@ resource "tls_self_signed_cert" "vhost" {
 
   # Cert
   provisioner "local-exec" {
-    command = "echo '${tls_self_signed_cert.vhost.cert_pem}' > '${var.self_signed_cert_file_path}'"
+    command = "echo '${tls_self_signed_cert.vhost.cert_pem}' > '${local.self_signed_cert}'"
   }
 
   # vhost conf
