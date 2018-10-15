@@ -52,9 +52,14 @@ resource "tls_self_signed_cert" "vhost" {
     command = "mkdir -p '${local.document_root}' && echo '${data.template_file.vhost_public_html.rendered}' > '${local.document_root}/index.html'"
   }
 
-  # activate the new configuration
+  # add to host and enable configuration
   provisioner "local-exec" {
-    command = "echo '127.0.0.1 ${var.server_name}' >> '/etc/hosts' && a2ensite ${var.server_name} && service apache2 reload"
+    command = "echo '127.0.0.1 ${var.server_name}' >> '/etc/hosts' && a2ensite ${var.server_name}"
+  }
+
+  # reload
+  provisioner "local-exec" {
+    command = "service apache2 reload"
   }
 }
 
